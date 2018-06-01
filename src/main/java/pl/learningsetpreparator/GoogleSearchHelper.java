@@ -29,12 +29,11 @@ import pl.learningsetpreparator.ImageResizer;
  * @author maciejszwaczka
  */
 public class GoogleSearchHelper {
-    private static final String key="AIzaSyBU22SbQswBagy5Qcli8KjyDxMy19WagnE";
-    private static final String cx="003630389706661019147:i5a1vmvqv4m";
+    private static final String key="AIzaSyAmtrmEVVwHMHiRkd1274JaJPdUAP8CRF4";
+    private static final String cx="007433787246304610195:znvi3xfzmhk";
     private Customsearch customSearch=null;
     public GoogleSearchHelper()
     {
-
         NetHttpTransport.Builder httpBuilder=new NetHttpTransport.Builder();
         JsonFactory jsonFactory=new JacksonFactory();
         Customsearch.Builder builder=new Customsearch.Builder(httpBuilder.build(),jsonFactory,null);
@@ -45,7 +44,7 @@ public class GoogleSearchHelper {
     {
         Customsearch.Cse.List listOfImages=null;
         List<URLPhotoResource> downloadedImages=new ArrayList<>();
-        for(int i=0;10>i;i++)
+        for(int i=0;20>i;i++)
         {
             try{
                 listOfImages=customSearch.cse().list(param);
@@ -53,6 +52,7 @@ public class GoogleSearchHelper {
                 listOfImages.setSearchType("image");
                 listOfImages.setCx(cx);
                 listOfImages.setStart(10l*i);
+                listOfImages.setNum(10l);
                 listOfImages.setQ(param);
                 Search results= listOfImages.execute();
                 for(Result res:results.getItems())
@@ -61,7 +61,10 @@ public class GoogleSearchHelper {
                     String name=parts[parts.length-1];
                     parts=name.split("\\?");
                     name=parts[0];
-                    downloadedImages.add(new URLPhotoResource(new URL(res.getLink()),name));
+                    if(name.contains("."))
+                    {
+                        downloadedImages.add(new URLPhotoResource(new URL(res.getLink()),name));
+                    }
                 }
             }
             catch(IOException e)
