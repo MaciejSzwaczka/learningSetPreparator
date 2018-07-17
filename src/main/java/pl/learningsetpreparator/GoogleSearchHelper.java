@@ -4,14 +4,16 @@
  * and open the template in the editor.
  */
 package pl.learningsetpreparator;
+import com.google.api.client.http.HttpRequest;
 import pl.learningsetpreparator.entities.*;
 import java.util.List;
 import java.util.ArrayList;
 import com.google.api.services.customsearch.Customsearch;
 import com.google.api.services.customsearch.Customsearch;
-import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.gson.GsonBuilder;
 import java.io.IOException;
+import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.http.javanet.NetHttpTransport.Builder;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -21,6 +23,8 @@ import com.google.api.services.customsearch.model.Result;
 import com.google.api.services.customsearch.model.Result.Image;
 import com.google.api.services.customsearch.model.Search;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import pl.learningsetpreparator.ImageResizer;
 
 
@@ -29,29 +33,46 @@ import pl.learningsetpreparator.ImageResizer;
  * @author maciejszwaczka
  */
 public class GoogleSearchHelper {
-    private static final String key="AIzaSyAmtrmEVVwHMHiRkd1274JaJPdUAP8CRF4";
+    private static final String key="AIzaSyAd5baKt88AghF84A_7LEpDZxWip1adkDw";
     private static final String cx="007433787246304610195:znvi3xfzmhk";
     private Customsearch customSearch=null;
     public GoogleSearchHelper()
     {
         NetHttpTransport.Builder httpBuilder=new NetHttpTransport.Builder();
-        JsonFactory jsonFactory=new JacksonFactory();
-        Customsearch.Builder builder=new Customsearch.Builder(httpBuilder.build(),jsonFactory,null);
-        customSearch=builder.setApplicationName("Learning set preparator").build();
-        
+        GsonFactory fact=new GsonFactory();
+        Customsearch.Builder builder=new Customsearch.Builder(httpBuilder.build(),fact,new HttpRequestInitializer() {
+            public void initialize(HttpRequest httpRequest) {
+                try {
+                    // set connect and read timeouts
+                    httpRequest.setConnectTimeout(1800000);
+                    httpRequest.setReadTimeout(1800000);
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        customSearch=builder.setApplicationName("My Project").build();
     }
-    public List<URLPhotoResource> getResultsImages(String param)
+    public List<URLPhotoResource> getResultsImages(String param, int portion)
     {
+        long DAY_IN_MS = 1000 * 60 * 60 * 24;
+        SimpleDateFormat formatOfDate=new SimpleDateFormat("yyyy-MM-dd");
+        Date actualDate=new Date(System.currentTimeMillis()-(portion * 7 * 4 * DAY_IN_MS));
+        Date prevDate=new Date(System.currentTimeMillis() - ((portion+1) * 7 *4 * DAY_IN_MS));
+        String actualDateStr= formatOfDate.format(actualDate);
+        String prevDateStr= formatOfDate.format(prevDate);
         Customsearch.Cse.List listOfImages=null;
         List<URLPhotoResource> downloadedImages=new ArrayList<>();
-        for(int i=0;20>i;i++)
+        for(int i=0;10>i;i++)
         {
             try{
-                listOfImages=customSearch.cse().list(param);
+                listOfImages=customSearch.cse().list("image");
                 listOfImages.setKey(key);
                 listOfImages.setSearchType("image");
                 listOfImages.setCx(cx);
                 listOfImages.setStart(10l*i);
+                listOfImages.setSort("date:r:"+actualDateStr+":"+prevDateStr);
                 listOfImages.setNum(10l);
                 listOfImages.setQ(param);
                 Search results= listOfImages.execute();
@@ -66,8 +87,9 @@ public class GoogleSearchHelper {
                         downloadedImages.add(new URLPhotoResource(new URL(res.getLink()),name));
                     }
                 }
+                Thread.sleep(1000);
             }
-            catch(IOException e)
+            catch(Exception e)
             {
                 e.printStackTrace();
             }

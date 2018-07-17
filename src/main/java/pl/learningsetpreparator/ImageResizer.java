@@ -25,11 +25,11 @@ public class ImageResizer {
     private int width;
     private int height;
     public BufferedImage resizeImage(BufferedImage image) throws NullPointerException{
-        Image img=image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        /*Image img=image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         image = new BufferedImage(800,800,Image.SCALE_DEFAULT);
         Graphics2D g2d = image.createGraphics();
         g2d.drawImage(img, 0, 0, null);
-        g2d.dispose();
+        g2d.dispose();*/
         return image;
     }
 }

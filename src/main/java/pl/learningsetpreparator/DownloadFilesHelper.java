@@ -13,7 +13,11 @@ import java.net.HttpURLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.net.ssl.SSLHandshakeException;
+import pl.learningsetpreparator.entities.FoodResource;
 import pl.learningsetpreparator.entities.URLPhotoResource;
 /**
  *
@@ -21,44 +25,55 @@ import pl.learningsetpreparator.entities.URLPhotoResource;
  */
 public class DownloadFilesHelper {
     
-    public static void downloadFilesFromUrl(List<URLPhotoResource> addresses,String name)
+    public static final String learningSetFolder="C:\\Users\\maciejszwaczka\\Documents\\NetBeansProjects\\LearningSetPreparator\\Learning set";
+    
+    public GoogleSearchHelper searcher;
+    
+    public BingSearchHelper bingHelper;
+    
+    public DownloadFilesHelper()
+    {
+        this.searcher=new GoogleSearchHelper();
+        this.bingHelper= new BingSearchHelper();
+    }
+    public void downloadFilesOfFood(List<FoodResource> foodNames) {
+       for(FoodResource foodRes:foodNames) {
+           int remainingAmountOfPhotos=foodRes.getAmountOfPhotos();
+                File folderWithPhotosOfDish=new File(learningSetFolder+"\\"+foodRes.getName());
+                folderWithPhotosOfDish.mkdir();
+                int portion=0;
+                while(remainingAmountOfPhotos>0){
+                /*List<URLPhotoResource> addresses = searcher.getResultsImages(foodRes.getName(),portion);*/
+                List<URLPhotoResource> addresses = bingHelper.getResultsImages(foodRes);
+                for(URLPhotoResource urlRes:addresses)
+                {
+                    try {
+                        downloadFileFromUrl(urlRes,folderWithPhotosOfDish);
+                        remainingAmountOfPhotos--;
+                    } catch (Exception ex) {
+                        System.out.println(urlRes.getUrl());
+                        ex.printStackTrace();
+                    }
+                }
+                portion++;
+            }
+       }
+    }
+    public void downloadFileFromUrl(URLPhotoResource url,File folderWithPhotos) throws Exception
     {
         System.setProperty("http.agent", "");       
         ImageResizer imgHelper=new ImageResizer(800,800);
-        File folderWithPhotos=new File(System.getProperty("user.dir")+"\\Learning set\\"+name);
-        folderWithPhotos.mkdir();
-        System.out.println(folderWithPhotos.getAbsolutePath());
-        for(URLPhotoResource url:addresses)
-        {
-            try{
-                File newFile=new File(folderWithPhotos.getAbsolutePath()+"\\"+url.getName());
-                String[] parts=url.getName().split("\\.");                
-                HttpURLConnection connection = (HttpURLConnection) url.getUrl().openConnection();
-                connection.setRequestProperty("User-Agent",
+        File newFile=new File(folderWithPhotos.getAbsolutePath()+"\\"+url.getName());
+        String[] parts=url.getName().split("\\.");                
+        HttpURLConnection connection = (HttpURLConnection) url.getUrl().openConnection();
+        connection.setRequestProperty("User-Agent",
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31");
-                BufferedImage image =null;
-                try{
-                    image = ImageIO.read(connection.getInputStream());
-                    image=imgHelper.resizeImage(image);
-                    newFile.createNewFile();
-                    ImageIO.write(image, parts[parts.length-1],newFile);
-                    }
-                    catch(NullPointerException e)
-                    {
-                        System.out.println(url.getUrl());
-                        e.printStackTrace();
-                    }
-                    catch(IIOException e)
-                    {
-                        System.out.println(url.getUrl());
-                        e.printStackTrace();
-                    }    
-            }
-            catch(IOException e)
-            {
-                e.printStackTrace();
-            }
-            
-        }
-    }
+        BufferedImage image =null;
+        image = ImageIO.read(connection.getInputStream());
+        if(image!=null){
+            image=imgHelper.resizeImage(image);
+            newFile.createNewFile();
+            ImageIO.write(image, parts[parts.length-1],newFile);
+        }          
+    }  
 }
