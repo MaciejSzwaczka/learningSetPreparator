@@ -25,6 +25,8 @@ import com.google.api.services.customsearch.model.Search;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import pl.learningsetpreparator.ImageResizer;
 
 
@@ -54,14 +56,8 @@ public class GoogleSearchHelper {
         });
         customSearch=builder.setApplicationName("My Project").build();
     }
-    public List<URLPhotoResource> getResultsImages(String param, int portion)
+    public List<URLPhotoResource> getResultsImages(FoodResource resource)
     {
-        long DAY_IN_MS = 1000 * 60 * 60 * 24;
-        SimpleDateFormat formatOfDate=new SimpleDateFormat("yyyy-MM-dd");
-        Date actualDate=new Date(System.currentTimeMillis()-(portion * 7 * 4 * DAY_IN_MS));
-        Date prevDate=new Date(System.currentTimeMillis() - ((portion+1) * 7 *4 * DAY_IN_MS));
-        String actualDateStr= formatOfDate.format(actualDate);
-        String prevDateStr= formatOfDate.format(prevDate);
         Customsearch.Cse.List listOfImages=null;
         List<URLPhotoResource> downloadedImages=new ArrayList<>();
         for(int i=0;10>i;i++)
@@ -72,9 +68,8 @@ public class GoogleSearchHelper {
                 listOfImages.setSearchType("image");
                 listOfImages.setCx(cx);
                 listOfImages.setStart(10l*i);
-                listOfImages.setSort("date:r:"+actualDateStr+":"+prevDateStr);
                 listOfImages.setNum(10l);
-                listOfImages.setQ(param);
+                listOfImages.setQ(resource.getName());
                 Search results= listOfImages.execute();
                 for(Result res:results.getItems())
                 {

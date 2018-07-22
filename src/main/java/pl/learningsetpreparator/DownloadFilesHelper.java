@@ -39,23 +39,24 @@ public class DownloadFilesHelper {
     public void downloadFilesOfFood(List<FoodResource> foodNames) {
        for(FoodResource foodRes:foodNames) {
            int remainingAmountOfPhotos=foodRes.getAmountOfPhotos();
-                File folderWithPhotosOfDish=new File(learningSetFolder+"\\"+foodRes.getName());
-                folderWithPhotosOfDish.mkdir();
-                int portion=0;
-                while(remainingAmountOfPhotos>0){
-                /*List<URLPhotoResource> addresses = searcher.getResultsImages(foodRes.getName(),portion);*/
-                List<URLPhotoResource> addresses = bingHelper.getResultsImages(foodRes);
-                for(URLPhotoResource urlRes:addresses)
-                {
-                    try {
-                        downloadFileFromUrl(urlRes,folderWithPhotosOfDish);
-                        remainingAmountOfPhotos--;
-                    } catch (Exception ex) {
-                        System.out.println(urlRes.getUrl());
-                        ex.printStackTrace();
-                    }
+            File folderWithPhotosOfDish=new File(learningSetFolder+"\\"+foodRes.getName());
+            folderWithPhotosOfDish.mkdir();
+            int portion=0;
+            while(remainingAmountOfPhotos>0){
+            /*List<URLPhotoResource> addresses = searcher.getResultsImages(foodRes.getName(),portion);*/
+            List<URLPhotoResource> addresses = bingHelper.getResultsImages(foodRes);
+            addresses.addAll(searcher.getResultsImages(foodRes));
+            for(URLPhotoResource urlRes:addresses)
+            {
+                try {
+                    downloadFileFromUrl(urlRes,folderWithPhotosOfDish);
+                    remainingAmountOfPhotos--;
+                } catch (Exception ex) {
+                    System.out.println(urlRes.getUrl());
+                    ex.printStackTrace();
                 }
-                portion++;
+            }
+            portion++;
             }
        }
     }
