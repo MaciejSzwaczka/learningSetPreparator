@@ -36,17 +36,17 @@ public class BingSearchHelper {
     {
         
     }
-    public List<URLPhotoResource> getResultsImages(FoodResource res)
+    public Set<URL> getResultsImages(String foodName)
     {
         HttpClient httpclient = HttpClients.createDefault();
-        Set<String> foodPhotosAddresses=new HashSet<>();
+        Set<URL> foodPhotosAddresses=new HashSet<>();
         try
         {
             for(int i=0;8>i;i++)
             {
                 URIBuilder builder = new URIBuilder("https://api.cognitive.microsoft.com/bing/v7.0/images/search");
 
-                builder.setParameter("q", res.getName());
+                builder.setParameter("q", foodName);
                 builder.setParameter("count", "150");
                 builder.setParameter("offset", Integer.toString((150)*i));
                 builder.setParameter("mkt", "en-us");
@@ -64,34 +64,18 @@ public class BingSearchHelper {
                     System.out.println(foodPhotosAddresses.size());
                 }
             }
-            System.out.println(foodPhotosAddresses.size());
             Thread.sleep(1000);
-            System.out.println(foodPhotosAddresses.size());
         }
         catch (Exception e)
         {
             System.out.println(e.getMessage());
         }
-        System.out.println(foodPhotosAddresses.size());
-        List<URLPhotoResource> photosAddresses=new ArrayList<>();
-        for(String addr:foodPhotosAddresses)
-        {
-            String parts[]=addr.split("/");
-            String name=parts[parts.length-1];
-            parts=name.split("\\?");
-            name=parts[0];
-            try {
-                photosAddresses.add(new URLPhotoResource(new URL(addr),name));
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(BingSearchHelper.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return photosAddresses;
+        return foodPhotosAddresses;
     }
-    private Set<String> parseJson(String requestStr)
+    private Set<URL> parseJson(String requestStr) throws MalformedURLException
     {
         int x = requestStr.indexOf("{");
-        Set<String> newSet=new HashSet<>();
+        Set<URL> newSet=new HashSet<>();
         requestStr = requestStr.substring(x);
         try { 
             JSONObject json = new JSONObject(requestStr.trim());
@@ -101,7 +85,7 @@ public class BingSearchHelper {
             for(int i=0;rateArray.length()>i;i++)
             {
                 JSONObject obj=rateArray.getJSONObject(i);
-                newSet.add(obj.getString("contentUrl"));
+                newSet.add(new URL(obj.getString("contentUrl")));
             }
         } catch (JSONException ex) {
             Logger.getLogger(BingSearchHelper.class.getName()).log(Level.SEVERE, null, ex);

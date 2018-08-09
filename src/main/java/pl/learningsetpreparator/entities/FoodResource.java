@@ -20,4 +20,13 @@ import lombok.Setter;
 public class FoodResource {
     private String name;
     private int amountOfPhotos;
+    /*@Override*/
+    /*public boolean equals(Object o)
+    {
+        if(o instanceof FoodResource)
+        {
+            FoodResource toCheckEqualityObject=(FoodResource)o;
+            return name.equals(toCheckEqualityObject.name) && amountOfPhotos
+        }
+    }*/
 }

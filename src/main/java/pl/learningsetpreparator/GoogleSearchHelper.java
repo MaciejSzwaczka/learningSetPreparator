@@ -42,24 +42,13 @@ public class GoogleSearchHelper {
     {
         NetHttpTransport.Builder httpBuilder=new NetHttpTransport.Builder();
         GsonFactory fact=new GsonFactory();
-        Customsearch.Builder builder=new Customsearch.Builder(httpBuilder.build(),fact,new HttpRequestInitializer() {
-            public void initialize(HttpRequest httpRequest) {
-                try {
-                    // set connect and read timeouts
-                    httpRequest.setConnectTimeout(1800000);
-                    httpRequest.setReadTimeout(1800000);
-
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
+        Customsearch.Builder builder=new Customsearch.Builder(httpBuilder.build(),fact,null);
         customSearch=builder.setApplicationName("My Project").build();
     }
-    public List<URLPhotoResource> getResultsImages(FoodResource resource)
+    public Set<URL> getResultsImages(String foodName)
     {
         Customsearch.Cse.List listOfImages=null;
-        List<URLPhotoResource> downloadedImages=new ArrayList<>();
+        Set<URL> downloadedImages=new HashSet<>();
         for(int i=0;10>i;i++)
         {
             try{
@@ -69,7 +58,7 @@ public class GoogleSearchHelper {
                 listOfImages.setCx(cx);
                 listOfImages.setStart(10l*i);
                 listOfImages.setNum(10l);
-                listOfImages.setQ(resource.getName());
+                listOfImages.setQ(foodName);
                 Search results= listOfImages.execute();
                 for(Result res:results.getItems())
                 {
@@ -79,7 +68,7 @@ public class GoogleSearchHelper {
                     name=parts[0];
                     if(name.contains("."))
                     {
-                        downloadedImages.add(new URLPhotoResource(new URL(res.getLink()),name));
+                        downloadedImages.add(new URL(res.getLink()));
                     }
                 }
                 Thread.sleep(1000);

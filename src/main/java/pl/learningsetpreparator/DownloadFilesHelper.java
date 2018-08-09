@@ -27,36 +27,24 @@ public class DownloadFilesHelper {
     
     public static final String learningSetFolder="C:\\Users\\maciejszwaczka\\Documents\\NetBeansProjects\\LearningSetPreparator\\Learning set";
     
-    public GoogleSearchHelper searcher;
-    
-    public BingSearchHelper bingHelper;
+    public SearchHelper searchHelper;
     
     public DownloadFilesHelper()
     {
-        this.searcher=new GoogleSearchHelper();
-        this.bingHelper= new BingSearchHelper();
+        this.searchHelper = new SearchHelper();
     }
-    public void downloadFilesOfFood(List<FoodResource> foodNames) {
-       for(FoodResource foodRes:foodNames) {
-           int remainingAmountOfPhotos=foodRes.getAmountOfPhotos();
-            File folderWithPhotosOfDish=new File(learningSetFolder+"\\"+foodRes.getName());
+    public void downloadFilesOfFood(List<String> foodNames) {
+       for(String foodRes:foodNames) {
+            File folderWithPhotosOfDish=new File(learningSetFolder+"\\"+foodRes);
             folderWithPhotosOfDish.mkdir();
-            int portion=0;
-            while(remainingAmountOfPhotos>0){
-            /*List<URLPhotoResource> addresses = searcher.getResultsImages(foodRes.getName(),portion);*/
-            List<URLPhotoResource> addresses = bingHelper.getResultsImages(foodRes);
-            addresses.addAll(searcher.getResultsImages(foodRes));
-            for(URLPhotoResource urlRes:addresses)
+            for(URLPhotoResource urlRes:searchHelper.getPhotosOfFood(foodRes))
             {
                 try {
                     downloadFileFromUrl(urlRes,folderWithPhotosOfDish);
-                    remainingAmountOfPhotos--;
                 } catch (Exception ex) {
                     System.out.println(urlRes.getUrl());
                     ex.printStackTrace();
                 }
-            }
-            portion++;
             }
        }
     }
